@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Сәйкестендіру баптау{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card p-5 shadow border-0">
+            <h3 class="text-center mb-4 text-success">Сәйкестендіру ойыны</h3>
+            <form method="GET" action="{% url 'match' %}">
+                <div class="mb-5">
+                    <label class="form-label fw-bold">Тапсырма саны:</label>
+                    <select name="count" class="form-select">
+                        <option value="5">5 жұп</option>
+                        <option value="8">8 жұп</option>
+                        <option value="10">10 жұп</option>
+                    </select>
+                </div>
+                <button type="submit" name="start_game" value="true" class="btn btn-success w-100 btn-lg">Бастау</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

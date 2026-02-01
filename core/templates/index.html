@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            
+          <div class="search-container mb-5">
+    <div class="text-center mb-2">
+        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 fw-bold" 
+              style="font-size: 1.1rem; letter-spacing: 1px; border-radius: 8px;">
+            «SözÖrnegi.kz» тіл корпусы
+        </span>
+    </div>
+
+    <h2 class="text-center mb-4" style="color: #2c3e50; font-weight: 700;">
+        Жазушылар шығармасынан сөз іздеу
+    </h2>
+    
+  
+                <form method="GET" action="">
+                    
+                    <div class="input-group input-group-lg mb-4">
+                        <input type="text" name="q" class="form-control" 
+                               placeholder="Сөзді немесе тіркесті осы жерге жазыңыз..." 
+                               value="{{ query|default:'' }}" 
+                               aria-label="Сөзді немесе тіркесті осы жерге жазыңыз..." 
+                               style="height: 55px; border-right: none;">
+                        
+                        <button class="btn btn-secondary" type="submit" 
+                                style="width: 55px; border-left: none; background-color: #6c757d;">
+                            <i class="bi bi-search" style="font-size: 1.2rem;"></i>
+                        </button>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Автор:</label>
+                            <select name="author" class="form-select">
+                                <option value="all">Барлық авторлар</option>
+                                {% for author in authors %}
+                                <option value="{{ author.id }}" {% if request.GET.author == author.id|stringformat:"i" %}selected{% endif %}>{{ author.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-muted small fw-bold text-uppercase">Шығарма:</label>
+                            <select name="work" class="form-select">
+                                <option value="all">Барлық шығармалар</option>
+                                {% for work in works %}
+                                <option value="{{ work.id }}" {% if request.GET.work == work.id|stringformat:"i" %}selected{% endif %}>{{ work.title }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4 text-center">
+                        <p class="text-muted small mb-2 fw-bold text-uppercase">Категорияларды таңдаңыз (бірнешеуін таңдауға болады):</p>
+                        <div class="d-flex flex-wrap justify-content-center align-items-center">
+                            {% for cat in categories %}
+                            <label>
+                                <input type="checkbox" name="category" value="{{ cat.id }}" class="category-input d-none" 
+                                       {% if cat.id|stringformat:"i" in selected_categories %}checked{% endif %}
+                                       onchange="toggleClearBtn()"> 
+                                <span class="category-btn">{{ cat.name }}</span>
+                            </label>
+                            {% endfor %}
+                            
+                            <a href="/" id="clearBtn" class="category-btn text-decoration-none clear-btn {% if not selected_categories %}d-none{% endif %}">
+                               <i class="bi bi-x-lg"></i> Тазалау
+                            </a>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-main-search w-100">
+                        ІЗДЕУ
+                    </button>
+
+                </form>
+            </div>
+
+            {% if results %}
+            <div>
+                <h5 class="mb-4 text-primary">Нәтижелер саны: <span class="fw-bold text-dark">{{ results.count }}</span></h5>
+                {% for item in results %}
+                <div class="card result-card mb-4 shadow-sm">
+                    <div class="card-body p-4">
+                        
+                        <div class="d-flex flex-wrap gap-2 mb-3 border-bottom pb-3">
+                            <a href="#" class="info-badge modal-trigger" style="border-color: transparent !important;">
+                                <span class="hashtag-symbol">#</span>{{ item.category.name }}
+                            </a>
+                            
+                            <a href="#" class="info-badge modal-trigger" data-bs-toggle="modal" data-bs-target="#authorModal{{ item.id }}">
+                                👤 {{ item.work.author.full_name }}
+                            </a>
+
+                            <a href="#" class="info-badge modal-trigger" data-bs-toggle="modal" data-bs-target="#workModal{{ item.id }}">
+                                📖 «{{ item.work.title }}»
+                            </a>
+                        </div>
+
+                        <h3 class="entry-title">{{ item.entry_title }}</h3>
+                        
+                        {% if item.meaning %}
+                        <p class="meaning-text">
+                            <strong>Мағынасы:</strong> {{ item.meaning }}
+                        </p>
+                        {% endif %}
+                        
+                        {% if item.example_text %}
+                        <div class="example-box">
+                            <strong class="text-secondary d-block mb-1">Мәтіндегі қолданысы:</strong>
+                            {{ item.example_text|linebreaksbr }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="modal fade" id="authorModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-primary text-white">
+                                <h5 class="modal-title">Автор туралы</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <h2 class="text-primary">{{ item.work.author.full_name }}</h2>
+                                <hr>
+                                <h6 class="modal-label">Өмірбаяны:</h6>
+                                <p class="text-muted">{{ item.work.author.bio|default:"Ақпарат жоқ"|linebreaksbr }}</p>
+                                <h6 class="modal-label text-primary">Негізгі еңбектері:</h6>
+                                <div class="bg-light p-3 rounded border">
+                                    {{ item.work.author.main_works|default:"Ақпарат жоқ"|linebreaksbr }}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Жабу</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="workModal{{ item.id }}" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-info text-white">
+                                <h5 class="modal-title">Шығарма паспорты</h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body p-4">
+                                <h2 class="text-info text-dark">«{{ item.work.title }}»</h2>
+                                <table class="table table-bordered mt-3">
+                                    <tr><th class="bg-light" style="width:30%">Тақырыбы</th><td class="fw-bold">{{ item.work.theme|default:"-" }}</td></tr>
+                                    <tr><th>Жылы</th><td>{{ item.work.created_year }}</td></tr>
+                                    <tr><th>Жанры</th><td>{{ item.work.genre }}</td></tr>
+                                    <tr><th>Түрі</th><td>{{ item.work.genre_type }}</td></tr>
+                                    <tr><th>Хронотопы</th><td>{{ item.work.chronotope }}</td></tr>
+                                </table>
+                                <h6 class="modal-label text-info text-dark">Қысқаша аңдатпа:</h6>
+                                <div class="bg-light p-3 border rounded">
+                                    {{ item.work.abstract|default:"Аңдатпа жоқ"|linebreaksbr }}
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Жабу</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% elif query %}
+            <div class="alert alert-info text-center p-5">
+                <h4>Нәтиже жоқ 😞</h4>
+                <p>Бұл сұраныс бойынша ештеңе табылмады.</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+<a class="navbar-brand fw-bold text-primary" href="/">
+    <i class="bi bi-alphabet-uppercase"></i> SözÖrnegi.kz
+</a>    
+
+{% block extra_js %}
+<script>
+    function toggleClearBtn() {
+        const checkboxes = document.querySelectorAll('.category-input:checked');
+        const clearBtn = document.getElementById('clearBtn');
+        if (checkboxes.length > 0) {
+            clearBtn.classList.remove('d-none');
+        } else {
+            clearBtn.classList.add('d-none');
+        }
+    }
+</script>
+{% endblock %}

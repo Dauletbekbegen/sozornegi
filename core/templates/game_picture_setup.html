@@ -1,0 +1,26 @@
+{% include 'index.html' only %}
+<div class="container mt-5 text-center">
+    {% for img in images %}
+    <div class="card mb-5 p-4 shadow-sm">
+        <img src="{{ img.image.url }}" class="img-fluid mx-auto mb-3 rounded" style="max-height: 300px;">
+        <h4>Бұл не?</h4>
+        <input type="text" class="form-control w-50 mx-auto mt-2" placeholder="Жауапты жазыңыз..." id="ans-{{ forloop.counter }}">
+        <button class="btn btn-primary mt-3" onclick="checkImgAnswer({{ forloop.counter }}, '{{ img.correct_answer }}')">Тексеру</button>
+        <p class="mt-2 fw-bold" id="res-{{ forloop.counter }}"></p>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function checkImgAnswer(id, correct) {
+        let input = document.getElementById('ans-' + id).value;
+        let res = document.getElementById('res-' + id);
+        if(input.toLowerCase().trim() === correct.toLowerCase().trim()) {
+            res.innerText = "Дұрыс! ✅";
+            res.className = "mt-2 fw-bold text-success";
+        } else {
+            res.innerText = "Қате! Дұрыс жауап: " + correct;
+            res.className = "mt-2 fw-bold text-danger";
+        }
+    }
+</script>

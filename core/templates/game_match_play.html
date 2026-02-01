@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+
+{% block title %}Сәйкестендіру ойнау{% endblock %}
+
+{% block content %}
+<h2 class="text-success mb-4 text-center fw-bold">Сөздерді мағынасымен сәйкестендіріңіз</h2>
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        
+        <form method="POST" action="{% url 'match' %}" id="matchForm">
+            {% csrf_token %}
+            <input type="hidden" name="match_results" id="match_results" value="[]">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <h5 class="text-center text-success mb-3">СӨЗДЕР (Entry Title)</h5>
+                    {% for w in words %}
+                    <div class="card p-3 mb-3 border-0 bg-light word-card match-item" 
+                         data-id="{{ w.id }}" data-type="word" 
+                         id="w-{{ w.id }}" onclick="selectItem(this)" 
+                         style="cursor:pointer; transition: all 0.2s;">
+                        {{ w.text }}
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="col-md-6">
+                    <h5 class="text-center text-success mb-3">МАҒЫНАЛАР (Meaning)</h5>
+                    {% for m in meanings %}
+                    <div class="card p-3 mb-3 border-0 bg-light meaning-card match-item" 
+                         data-id="{{ m.id }}" data-type="meaning" 
+                         id="m-{{ m.id }}" onclick="selectItem(this)" 
+                         style="cursor:pointer; transition: all 0.2s;">
+                        {{ m.text }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <h4 class="fw-bold" id="match-status">... Сәйкестік күтуде ...</h4>
+                <button type="submit" id="submitButton" class="btn btn-success btn-lg px-5 mt-3" disabled>
+                    Нәтижені көрсету
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    let selectedWord = null;
+    let selectedMeaning = null;
+    let matchesFound = 0;
+    const totalMatches = {{ count }};
+    const finalResults = []; // Соңғы нәтижелерді жинайтын массив
+
+    function selectItem(element) {
+        if (element.classList.contains('matched')) return;
+
+        const id = element.dataset.id;
+        const type = element.dataset.type;
+
+        // Бұрын таңдалған элементтерден рамканы тазалау
+        document.querySelectorAll('.match-item').forEach(el => {
+            if (!el.classList.contains('matched')) {
+                el.classList.remove('border-success', 'border-3', 'shadow');
+            }
+        });
+        
+        // Жаңа элементті белгілеу
+        element.classList.add('border', 'border-success', 'border-3', 'shadow');
+
+        if (type === 'word') {
+            selectedWord = id;
+        } else { // type === 'meaning'
+            selectedMeaning = id;
+            if (!selectedWord) {
+                document.getElementById('match-status').innerText = "Алдымен Сөзді таңдаңыз.";
+                setTimeout(() => document.getElementById('match-status').innerText = "... Сәйкестік күтуде ...", 1000);
+                selectedMeaning = null; 
+                element.classList.remove('border-success', 'border-3', 'shadow');
+                return;
+            }
+        }
+
+        // Егер екеуі де таңдалса, тексереміз
+        if (selectedWord && selectedMeaning && wordEl && meaningEl) {
+            
+            let wordEl = document.getElementById('w-' + selectedWord);
+            let meaningEl = document.getElementById('m-' + selectedMeaning);
+
+            // Нәтижені жинақтаймыз (бұл дұрыс немесе қате екенін білдірмейді)
+            finalResults.push({
+                'id': selectedWord,
+                'matched_id': selectedMeaning
+            });
+
+            // Визуалды кері байланыс (Қолданушыға дұрыс/қате екенін көрсету)
+            if (selectedWord === selectedMeaning) {
+                // ДҰРЫС
+                wordEl.classList.replace('bg-light', 'bg-success');
+                meaningEl.classList.replace('bg-light', 'bg-success');
+                wordEl.classList.add('text-white', 'matched');
+                meaningEl.classList.add('text-white', 'matched');
+                wordEl.onclick = null;
+                meaningEl.onclick = null;
+                matchesFound++;
+                document.getElementById('match-status').innerText = `Дұрыс! ✅ ${matchesFound}/${totalMatches}`;
+            } else {
+                // ҚАТЕ
+                document.getElementById('match-status').innerText = "Қате! Қайта көріңіз. ❌";
+                wordEl.classList.add('bg-danger', 'text-white');
+                meaningEl.classList.add('bg-danger', 'text-white');
+                
+                // Қате болғандарды 1 секундтан кейін қалпына келтіреміз
+                setTimeout(() => {
+                    wordEl.classList.remove('border-success', 'border-3', 'shadow', 'bg-danger', 'text-white');
+                    meaningEl.classList.remove('border-success', 'border-3', 'shadow', 'bg-danger', 'text-white');
+                    wordEl.classList.add('bg-light');
+                    meaningEl.classList.add('bg-light');
+                    document.getElementById('match-status').innerText = "... Сәйкестік күтуде ...";
+                }, 1000);
+            }
+
+            // Таңдауды тазалау
+            selectedWord = null;
+            selectedMeaning = null;
+        }
+
+        // Барлық сөздер таңдалғанда, нәтиже батырмасын іске қосу
+        if (finalResults.length === totalMatches) {
+            document.getElementById('submitButton').disabled = false;
+        }
+    }
+    
+    // Форманы жіберу алдында нәтижелерді жасырын өріске жазу
+    document.getElementById('matchForm').addEventListener('submit', function(e) {
+        if (finalResults.length !== totalMatches) {
+            alert("Барлық сәйкестіктерді тауып немесе кезекпен таңдап шығыңыз!");
+            e.preventDefault();
+            return;
+        }
+        document.getElementById('match_results').value = JSON.stringify(finalResults);
+    });
+</script>
+{% endblock %}

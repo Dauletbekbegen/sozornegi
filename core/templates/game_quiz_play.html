@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Тест ойнау{% endblock %}
+
+{% block content %}
+<h2 class="text-primary mb-5 text-center fw-bold">Тест: Сөз мағынасын тап</h2>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        
+        <form method="POST" action="{% url 'quiz' %}" id="quizForm">
+            {% csrf_token %}
+            
+            {% for q in quiz_data %}
+            <div class="card mb-4 shadow-sm quiz-card" id="q-{{ forloop.counter }}">
+                <div class="card-header bg-primary text-white p-3">
+                    <h5 class="mb-0">Сұрақ #{{ forloop.counter }}/{{ quiz_data|length }}</h5>
+                </div>
+                
+                <div class="card-body p-4">
+                    <h4 class="mb-4 text-dark">
+                        <b>"{{ q.question }}"</b> сөзінің мағынасы қайсы?
+                    </h4>
+                    
+                    {% for opt in q.options %}
+                    <div class="form-check p-0 mb-2 answer-option-box" 
+                         onclick="selectAnswer(this, 'q_{{ q.id }}', '{{ opt|escapejs }}')">
+                        
+                        <input class="form-check-input d-none" type="radio" 
+                               name="q_{{ q.id }}" id="opt_{{ q.id }}_{{ forloop.counter }}" 
+                               value="{{ opt }}" required>
+                        
+                        <label class="btn btn-outline-dark w-100 mb-0 text-start p-3 answer-btn" 
+                               for="opt_{{ q.id }}_{{ forloop.counter }}">
+                            {{ opt }}
+                        </label>
+                    </div>
+                    {% endfor %}
+
+                    <input type="hidden" id="correct_q_{{ q.id }}" value="{{ q.correct_answer }}">
+                </div>
+            </div>
+            {% endfor %}
+            
+            <div class="text-center mt-5 mb-5">
+                <button type="submit" class="btn btn-success btn-lg px-5">Нәтижені көрсету</button>
+            </div>
+        </form>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Радио түймелерді қолмен басқару (дизайн үшін)
+    function selectAnswer(box, name, value) {
+        // Бұрын таңдалғандарды тазалау
+        box.closest('.card-body').querySelectorAll('.answer-btn').forEach(btn => {
+            btn.classList.replace('btn-primary', 'btn-outline-dark');
+            btn.classList.remove('text-white');
+        });
+        
+        // Жаңадан таңдалғанды белгілеу
+        const input = box.querySelector('input');
+        const label = box.querySelector('label');
+        input.checked = true;
+        label.classList.replace('btn-outline-dark', 'btn-primary');
+        label.classList.add('text-white');
+    }
+    
+    // Форманы жіберу алдында барлық сұраққа жауап берілгенін тексеру
+    document.getElementById('quizForm').addEventListener('submit', function(e) {
+        let allAnswered = true;
+        const totalQuestions = {{ quiz_data|length }};
+        const questionIds = Array.from(this.elements).filter(el => el.name.startsWith('q_')).map(el => el.name).filter((value, index, self) => self.indexOf(value) === index);
+
+        if (questionIds.length < totalQuestions) {
+            alert("Барлық сұрақтарға жауап беріңіз!");
+            e.preventDefault();
+            return;
+        }
+    });
+</script>
+{% endblock %}

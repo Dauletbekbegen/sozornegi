@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Ойындар{% endblock %}
+
+{% block content %}
+<h2 class="text-center mb-5 text-primary fw-bold">Тілдік ойындар</h2>
+<div class="row g-4 justify-content-center">
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 text-primary mb-3">📝</div>
+            <h4>Тест</h4>
+            <p class="text-muted">Шығарма бойынша сөздердің мағынасын тап.</p>
+            <a href="/games/quiz/" class="btn btn-primary w-100">Ойнау</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 text-success mb-3">🧩</div>
+            <h4>Сәйкестендіру</h4>
+            <p class="text-muted">Сөз бен оның мағынасын сәйкестендір.</p>
+            <a href="/games/match/" class="btn btn-success w-100">Ойнау</a>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100 shadow-sm border-0 text-center p-4">
+            <div class="display-1 text-warning mb-3">🖼️</div>
+            <h4>Суретті тап</h4>
+            <p class="text-muted">Суретте қандай сөз немесе шығарма жасырылған?</p>
+            <a href="/games/picture/" class="btn btn-warning w-100 text-white">Ойнау</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

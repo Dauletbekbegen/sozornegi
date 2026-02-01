@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Тестті баптау{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="card shadow-lg border-0" style="border-radius: 15px;">
+            <div class="card-header bg-primary text-white text-center p-4" style="border-radius: 15px 15px 0 0;">
+                <h3 class="mb-0 fw-bold"><i class="bi bi-sliders"></i> Тест параметрлері</h3>
+            </div>
+            <div class="card-body p-5">
+                
+                <form action="{% url 'quiz' %}" method="GET">
+                    <input type="hidden" name="start_game" value="true">
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted">Шығарманы таңдаңыз:</label>
+                        <select name="work" class="form-select form-select-lg">
+                            <option value="all">📚 Барлық шығармалар бойынша</option>
+                            {% for work in works %}
+                            <option value="{{ work.id }}">📖 {{ work.title }} ({{ work.author.full_name }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-muted">Сұрақ саны:</label>
+                        <select name="count" class="form-select form-select-lg">
+                            <option value="5">5 сұрақ</option>
+                            <option value="10" selected>10 сұрақ</option>
+                            <option value="15">15 сұрақ</option>
+                            <option value="20">20 сұрақ</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2 mt-5">
+                        <button type="submit" class="btn btn-primary btn-lg py-3 fw-bold">
+                            ТЕСТТІ БАСТАУ <i class="bi bi-arrow-right-circle-fill ms-2"></i>
+                        </button>
+                        <a href="/games/" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Артқа қайту
+                        </a>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

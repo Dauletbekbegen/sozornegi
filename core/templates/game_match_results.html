@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}Сәйкестендіру нәтижесі{% endblock %}
+
+{% block content %}
+<h2 class="text-success mb-5 text-center fw-bold">Сәйкестендіру нәтижесі</h2>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        
+        <div class="card p-5 mb-5 text-center shadow-lg border-0" 
+             style="background-color: {% if correct_count >= total_questions|floordiv:2 %}#e6ffed{% else %}#fff0f1{% endif %}; border-left: 8px solid {% if correct_count >= total_questions|floordiv:2 %}var(--bs-success){% else %}var(--bs-danger){% endif %} !important;">
+            
+            <div class="display-3 fw-bold mb-3" style="color: {% if correct_count == total_questions %}var(--bs-success){% else %}var(--bs-warning){% endif %}">
+                {% if correct_count == total_questions %}🏆 КЕРЕМЕТ! 🎉{% else %}НӘТИЖЕ{% endif %}
+            </div>
+            
+            <h1 class="fw-bolder">
+                {{ correct_count }}/{{ total_questions }}
+            </h1>
+            <p class="lead text-muted">Сіз {{ total_questions }} сәйкестіктен <b>{{ correct_count }}</b> дұрысын таптыңыз.</p>
+        </div>
+        
+        <h4 class="mb-4 text-success">Сәйкестіктерді тексеру</h4>
+        
+        {% for res in results %}
+        <div class="card mb-3 shadow-sm border-0" style="border-left: 5px solid {% if res.is_correct %}var(--bs-success){% else %}var(--bs-danger){% endif %} !important;">
+            <div class="card-body">
+                <h5 class="mb-3">
+                    <span class="fw-bold">Сөз:</span> "{{ res.question }}"
+                    <span class="float-end text-{% if res.is_correct %}success{% else %}danger{% endif %} fw-bold">
+                        {% if res.is_correct %}✅ Дұрыс{% else %}❌ Қате{% endif %}
+                    </span>
+                </h5>
+                <hr>
+                <p class="text-muted mb-1">Дұрыс мағынасы:</p>
+                <div class="p-2 bg-info text-white rounded">
+                    {{ res.correct_meaning }}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="text-center mt-5 mb-5">
+            <a href="/games/match/" class="btn btn-success btn-lg px-5 me-3"><i class="bi bi-arrow-clockwise"></i> Қайта ойнау</a>
+            <a href="/games/" class="btn btn-secondary btn-lg"><i class="bi bi-grid-fill"></i> Ойындарға оралу</a>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
